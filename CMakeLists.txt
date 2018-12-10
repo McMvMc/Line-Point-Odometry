@@ -15,7 +15,7 @@ set(DTARGET_ARCHITECTURE generic)
 find_package(OpenCV REQUIRED)
 find_package(Pangolin REQUIRED)
 find_package(PCL REQUIRED)
-find_package(Ceres REQUIRED)
+#find_package(Ceres REQUIRED)
 find_package(CGAL REQUIRED)
 set(CGAL_INCLUDE_DIRS /usr/local/include)
 find_package(GMP REQUIRED)
@@ -33,7 +33,7 @@ include_directories(
         ${OpenCV_INCLUDE_DIRS}
         ${Pangolin_INCLUDE_DIRS}
         ${PCL_INCLUDE_DIRS}
-        ${CERES_INCLUDE_DIRS}
+#        ${CERES_INCLUDE_DIRS}
         ${CGAL_INCLUDE_DIRS}
         #ORB_SLAM2
         #ORB_SLAM2/src
@@ -98,7 +98,7 @@ target_link_libraries(LPO
         ${OpenCV_LIBS}
         ${Pangolin_LIBRARIES}
         ${PCL_LIBRARIES}
-        ${CERES_LIBRARIES}
+#        ${CERES_LIBRARIES}
         ${CGAL_LIBRARY}
         ${GMP_LIBRARIES}
 #        vlo_utils

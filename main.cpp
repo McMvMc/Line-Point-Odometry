@@ -148,7 +148,7 @@ int main( int argc, char* argv[] )
             // update database
             Frame new_frame = Frame(left_image, right_image, left_pt_desc, right_pt_desc, left_pt2d_vec, right_pt2d_vec, tri_pt3d_vec);
             frame_vec.push_back(new_frame);
-            continue_track_flag = true;
+            continue_track_flag = false;
             i++;
         }
         draw_3d_frame(tri_pt3d_vec, tri_l3d_vec);
