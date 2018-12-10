@@ -139,7 +139,9 @@ int main( int argc, char* argv[] )
             // --- match with previous frame (point) ---
             if(frame_vec.size() > 0){
                 int last_frame_i = frame_vec.size()-1;
-                track_stereo(frame_vec[last_frame_i], left_image, right_image, visualize);
+                vector<cv::Point2d> tracked_pt2d_l_vec, tracked_pt2d_r_vec;
+                vector<int> tracked_idx = track_stereo(frame_vec[last_frame_i], left_image, right_image,
+                        tracked_pt2d_l_vec, tracked_pt2d_r_vec, visualize);
             }
 
             // update database

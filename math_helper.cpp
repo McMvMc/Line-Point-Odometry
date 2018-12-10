@@ -77,10 +77,10 @@ vector<cv::Vec6d> triangulate_lines(vector<KeyLine> keyl_vec_l, vector<KeyLine> 
         cv::Point3d origin_r_frame_l = change_frame(T_l2r.inv(), origin_r);
 
         // ray 1
-        cv::Point3d pt3d_1_frame_r = unproject_2d_point(keyl_vec_r[i].getStartPoint(), K_l, 10);
+        cv::Point3d pt3d_1_frame_r = unproject_2d_point(keyl_vec_r[i].getStartPoint(), K_r, 10);
         cv::Point3d pt3d_1 = change_frame(T_l2r.inv(), pt3d_1_frame_r);
         cv::Point3d dir_1 = pt3d_1 - origin_r_frame_l;
-        cv::Vec6d ray_1(dir_1.z, dir_1.y, dir_1.z, origin_r_frame_l.x, origin_r_frame_l.y, origin_r_frame_l.z); // pt = [0 0 0], dir = pt3d - pt
+        cv::Vec6d ray_1(dir_1.x, dir_1.y, dir_1.z, origin_r_frame_l.x, origin_r_frame_l.y, origin_r_frame_l.z); // pt = [0 0 0], dir = pt3d - pt
 
         // ray 2
         cv::Point3d pt3d_2_frame_r = unproject_2d_point(keyl_vec_r[i].getEndPoint(), K_r, 10);
@@ -94,6 +94,17 @@ vector<cv::Vec6d> triangulate_lines(vector<KeyLine> keyl_vec_l, vector<KeyLine> 
 
         out_3d_line.push_back(cv::Vec6d(l_endpt_1.x, l_endpt_1.y, l_endpt_1.z,
                                         l_endpt_2.x, l_endpt_2.y, l_endpt_2.z));
+//        out_3d_line.push_back(cv::Vec6d(origin_r_frame_l.x, origin_r_frame_l.y, origin_r_frame_l.z,
+//                                        pt3d_1.x, pt3d_1.y, pt3d_1.z));
+//        out_3d_line.push_back(cv::Vec6d(origin_r_frame_l.x, origin_r_frame_l.y, origin_r_frame_l.z,
+//                                        pt3d_2.x, pt3d_2.y, pt3d_2.z));
+//
+//        cv::Point3d pt2 = unproject_2d_point(keyl_vec_l[i].getStartPoint(), K_l, 10);
+//        cv::Point3d pt3 = unproject_2d_point(keyl_vec_l[i].getEndPoint(), K_l, 10);
+//        out_3d_line.push_back(cv::Vec6d(0, 0, 0,
+//                                        pt2.x, pt2.y, pt2.z));
+//        out_3d_line.push_back(cv::Vec6d(0, 0, 0,
+//                                        pt3.x, pt3.y, pt3.z));
     }
 
     return out_3d_line;

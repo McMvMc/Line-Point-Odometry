@@ -55,7 +55,7 @@ void draw_3d_frame(const vector<cv::Point3d> & tri_pt3d_vec, vector<cv::Vec6d> &
     glColor3f(1.0, 0, 0);
     for (size_t i = 0; i < tri_pt3d_vec.size(); i++)
     {
-        glVertex3f(-tri_pt3d_vec[i].x, tri_pt3d_vec[i].y, -tri_pt3d_vec[i].z);
+        glVertex3f(-tri_pt3d_vec[i].y, tri_pt3d_vec[i].z, -tri_pt3d_vec[i].x);
     }
     glEnd();
     glPointSize(1.0);
@@ -76,6 +76,7 @@ void draw_3d_frame(const vector<cv::Point3d> & tri_pt3d_vec, vector<cv::Vec6d> &
     glBegin(GL_LINES);
     glColor3f(0.0, 1.0, 0);
     for (size_t i = 0; i < tri_l3d_vec.size(); i++)
+//    for (size_t i = 0; i < min(6, int(tri_l3d_vec.size())); i++)
     {
         cv::Point3d pt1(tri_l3d_vec[i][0], tri_l3d_vec[i][1], tri_l3d_vec[i][2]);
         cv::Point3d pt2(tri_l3d_vec[i][3], tri_l3d_vec[i][4], tri_l3d_vec[i][5]);

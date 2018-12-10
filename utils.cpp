@@ -382,12 +382,13 @@ vector<int> track_prev_frame(const cv::Mat & prev_image, const cv::Mat & image,
 
 
 vector<int> track_stereo(const Frame & prev_frame, const cv::Mat & left_image,
-                         const cv::Mat & right_image, bool visualize)
+                         const cv::Mat & right_image, vector<cv::Point2d> & tracked_pt2d_l_vec,
+                         vector<cv::Point2d> & tracked_pt2d_r_vec, bool visualize)
 {
     // init
     cv::Mat prev_left_img = prev_frame.left_image.clone(), prev_right_img = prev_frame.right_image.clone();
-    vector<cv::Point2d> tracked_pt2d_l_vec, prev_pt2d_l_vec = prev_frame.feature_obser_l_vec;
-    vector<cv::Point2d> tracked_pt2d_r_vec, prev_pt2d_r_vec = prev_frame.feature_obser_r_vec;
+    vector<cv::Point2d> prev_pt2d_l_vec = prev_frame.feature_obser_l_vec;
+    vector<cv::Point2d> prev_pt2d_r_vec = prev_frame.feature_obser_r_vec;
 
     // track
     vector<int> tracked_idx_l_vec = track_prev_frame(prev_left_img, left_image, prev_pt2d_l_vec, tracked_pt2d_l_vec);
