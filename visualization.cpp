@@ -20,7 +20,7 @@ void draw_matches(const vector<cv::KeyPoint> & left_matched_keypts_vec, const ve
     cv::drawMatches(left_image, left_matched_keypts_vec, right_image, right_matched_keypts_vec,
                     filtered_matches, filtered_image);
     cv::imshow(title, filtered_image);
-    cv::waitKey(0);
+    cv::waitKey(500);
 }
 
 

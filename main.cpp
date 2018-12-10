@@ -76,7 +76,7 @@ int main( int argc, char* argv[] )
     // Define Projection and initial ModelView matrix
     pangolin::OpenGlRenderState s_cam(
             pangolin::ProjectionMatrix(640, 480, 420, 420, 320, 240, 0.2, 500),
-            pangolin::ModelViewLookAt(0, 0, 0, 0, 0, 10, pangolin::AxisNegY)
+            pangolin::ModelViewLookAt(0, 0, 0, 0, 10, 0, pangolin::AxisX)
     );
 
     // Create Interactive View in window
@@ -147,7 +147,7 @@ int main( int argc, char* argv[] )
             // update database
             Frame new_frame = Frame(left_image, right_image, left_pt_desc, right_pt_desc, left_pt2d_vec, right_pt2d_vec, tri_pt3d_vec);
             frame_vec.push_back(new_frame);
-            continue_track_flag = false;
+            continue_track_flag = true;
             i++;
         }
         draw_3d_frame(tri_pt3d_vec, tri_l3d_vec);

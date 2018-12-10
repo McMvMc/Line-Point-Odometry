@@ -66,8 +66,9 @@ cv::Point3d change_frame(cv::Mat T, cv::Point3d a)
 
 
 // left is [I 0], right is [R t]
-vector<cv::Vec6d> triangulate_lines(vector<KeyLine> keyl_vec_l, vector<KeyLine> keyl_vec_r)
+vector<cv::Vec6d> triangulate_lines(vector<KeyLine> & keyl_vec_l, vector<KeyLine> & keyl_vec_r)
 {
+    vector<KeyLine> keyl_vec_l_out, keyl_vec_r_out;
     vector<cv::Vec6d> out_3d_line; // dir, pt
     for(int i=0; i<keyl_vec_l.size(); i++)
     {
@@ -92,6 +93,12 @@ vector<cv::Vec6d> triangulate_lines(vector<KeyLine> keyl_vec_l, vector<KeyLine> 
         cv::Point3d l_endpt_1 = line_plane_intersection(cv::Mat(ray_1), cv::Mat(plane));
         cv::Point3d l_endpt_2 = line_plane_intersection(cv::Mat(ray_2), cv::Mat(plane));
 
+        double line_len = sqrt((l_endpt_1 - l_endpt_2).dot(l_endpt_1 - l_endpt_2));
+        if(l_endpt_1.z <= 0 || l_endpt_2.z <=0 || line_len > 10)
+        {
+            continue;
+        }
+
         out_3d_line.push_back(cv::Vec6d(l_endpt_1.x, l_endpt_1.y, l_endpt_1.z,
                                         l_endpt_2.x, l_endpt_2.y, l_endpt_2.z));
 //        out_3d_line.push_back(cv::Vec6d(origin_r_frame_l.x, origin_r_frame_l.y, origin_r_frame_l.z,
@@ -106,6 +113,9 @@ vector<cv::Vec6d> triangulate_lines(vector<KeyLine> keyl_vec_l, vector<KeyLine> 
 //        out_3d_line.push_back(cv::Vec6d(0, 0, 0,
 //                                        pt3.x, pt3.y, pt3.z));
     }
+
+    keyl_vec_l = keyl_vec_l_out;
+    keyl_vec_r = keyl_vec_r_out;
 
     return out_3d_line;
 }

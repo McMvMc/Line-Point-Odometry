@@ -150,6 +150,41 @@ vector<cv::DMatch> detect_match_point_features(cv::Mat left_image, cv::Mat right
 }
 
 
+void filter_short_lines(vector<KeyLine> & left_keyl, cv::Mat & left_keyl_desc,
+                        vector<KeyLine> & right_keyl, cv::Mat & right_keyl_desc, double len_thresh = 50)
+{
+    vector<KeyLine> left_keyl_out, right_keyl_out;
+    cv::Mat left_desc_out, right_desc_out;
+    for(int i=0; i<left_keyl.size(); i++)
+    {
+        cv::Point2f line_vec = left_keyl[i].getEndPoint() - left_keyl[i].getStartPoint();
+        double line_len = sqrt(line_vec.x*line_vec.x + line_vec.y*line_vec.y);
+        if(line_len < len_thresh){
+            continue;
+        }else{
+            left_keyl_out.push_back(left_keyl[i]);
+            left_desc_out.push_back(left_keyl_desc.row(i));
+        }
+    }
+    left_keyl = left_keyl_out;
+    left_keyl_desc = left_desc_out;
+
+    for(int i=0; i<right_keyl.size(); i++)
+    {
+        cv::Point2f line_vec = right_keyl[i].getEndPoint() - right_keyl[i].getStartPoint();
+        double line_len = sqrt(line_vec.x*line_vec.x + line_vec.y*line_vec.y);
+        if(line_len < len_thresh){
+            continue;
+        }else{
+            right_keyl_out.push_back(right_keyl[i]);
+            right_desc_out.push_back(right_keyl_desc.row(i));
+        }
+    }
+    right_keyl = right_keyl_out;
+    right_keyl_desc = right_desc_out;
+}
+
+
 vector<cv::DMatch>  detect_match_line_features(const cv::Mat & left_image, const cv::Mat & right_image,
                                                vector<KeyLine> & matched_l, vector<KeyLine> & matched_r,
                                                cv::Mat & left_keyl_desc, cv::Mat & right_keyl_desc,
@@ -168,6 +203,8 @@ vector<cv::DMatch>  detect_match_line_features(const cv::Mat & left_image, const
     line_descriptor->compute( right_image, right_keyl, right_keyl_desc );
 
     // match lines
+    double len_thresh = 50;
+    filter_short_lines(left_keyl, left_keyl_desc, right_keyl, right_keyl_desc, len_thresh);
     float nn_match_ratio = 0.6f;
     vector<vector<cv::DMatch>> matches;
     knn_match<KeyLine, BinaryDescriptorMatcher>(left_keyl, right_keyl, matched_l, matched_r,
@@ -365,9 +402,11 @@ vector<int> track_prev_frame(const cv::Mat & prev_image, const cv::Mat & image,
             continue;
         tracked_idx.push_back(i);
         tracked_pt2f_vec[k++] = tracked_pt2f_vec[i];
+        prev_pt2f_vec[k-1] = prev_pt2f_vec[i];
         circle( tracked_image, tracked_pt2f_vec[i], 3, cv::Scalar(0,255,0), -1, 8);
     }
     tracked_pt2f_vec.resize(k);
+    prev_pt2f_vec.resize(k);
 
     prev_pt2d_vec = Point2_d_f_conversion<float, double>(prev_pt2f_vec);
     tracked_pt2d_vec = Point2_d_f_conversion<float, double>(tracked_pt2f_vec);
@@ -396,15 +435,50 @@ vector<int> track_stereo(const Frame & prev_frame, const cv::Mat & left_image,
     vector<int> tracked_idx_r_vec = track_prev_frame(prev_right_img, right_image, prev_pt2d_r_vec, tracked_pt2d_r_vec);
     int n_r_tracked = tracked_idx_r_vec.size();
 
-    vector<int> tracked_idx_both_vec = n_l_tracked > n_r_tracked? tracked_idx_l_vec : tracked_idx_r_vec;
-    vector<int>::iterator it=std::set_intersection (tracked_idx_l_vec.begin(), tracked_idx_l_vec.begin()+n_l_tracked,
-            tracked_idx_r_vec.begin(), tracked_idx_r_vec.begin()+n_r_tracked, tracked_idx_both_vec.begin());
-    tracked_idx_both_vec.resize(it-tracked_idx_both_vec.begin());
+//    vector<int> tracked_idx_both_vec = n_l_tracked > n_r_tracked? tracked_idx_l_vec : tracked_idx_r_vec;
+//    vector<int>::iterator it=std::set_intersection (tracked_idx_l_vec.begin(), tracked_idx_l_vec.begin()+n_l_tracked,
+//            tracked_idx_r_vec.begin(), tracked_idx_r_vec.begin()+n_r_tracked, tracked_idx_both_vec.begin());
+//    tracked_idx_both_vec.resize(it-tracked_idx_both_vec.begin());
+    int k=0;
+    for(int i=0, j=0; i<tracked_idx_l_vec.size() && j<tracked_idx_r_vec.size();)
+    {
+        int i_l = tracked_idx_l_vec[i];
+        int i_r = tracked_idx_r_vec[j];
 
+        if(i_l == i_r)
+        {
+            tracked_idx_l_vec[k] = i_l;
+            tracked_pt2d_l_vec[k] = tracked_pt2d_l_vec[i];
+            tracked_idx_r_vec[k] = i_r;
+            tracked_pt2d_r_vec[k] = tracked_pt2d_r_vec[j];
+            k++; i++; j++;
+        }else if(i_l < i_r){
+            i++;
+        }else{
+            j++;
+        }
+    }
+    tracked_idx_l_vec.resize(k);
+    tracked_idx_r_vec.resize(k);
+    tracked_pt2d_l_vec.resize(k);
+    tracked_pt2d_r_vec.resize(k);
 
     // filter
     float inlierDistance = 3;
     cv::Mat tmp1, tmp2;
     vector<int> inlier_idx = filter_by_F(F_stereo, prev_left_img, prev_right_img, tracked_pt2d_l_vec, tracked_pt2d_r_vec,
             tmp1, tmp2, inlierDistance, visualize);
+
+    for(int i=0; i<inlier_idx.size(); i++)
+    {
+        int idx = inlier_idx[i];
+        tracked_idx_l_vec[i] = tracked_idx_l_vec[idx];
+        tracked_idx_r_vec[i] = tracked_idx_r_vec[idx];
+
+        assert(tracked_idx_r_vec[i] == tracked_idx_l_vec[i]);
+    }
+    tracked_idx_l_vec.resize(inlier_idx.size());
+    tracked_idx_r_vec.resize(inlier_idx.size());
+
+    return tracked_idx_l_vec;
 }
